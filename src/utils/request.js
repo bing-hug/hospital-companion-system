@@ -1,5 +1,5 @@
 import axios from "axios";
-import ElMessage from 'element-plus'
+import { ElMessage } from 'element-plus'
 
 const http = axios.create({
     baseURL: 'https://v3pz.itndedu.com/v3pz',
@@ -27,6 +27,7 @@ http.interceptors.response.use(function(response){
     }else if(response.data.code === -2){
         localStorage.removeItem('pz_token');
         localStorage.removeItem('pz_userInfo');
+        localStorage.removeItem('pz_v3pz');
         window.location.href = window.location.origin;
     }
     return response

@@ -1,12 +1,15 @@
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, computed, toRaw } from "vue";
 import { ElMessage } from "element-plus";
-import { getCode, userAuthentication, login } from "@/api/index.js";
+import { getCode, userAuthentication, login, menuPermissions } from "@/api/index.js";
 import { useRouter } from "vue-router";
+import { useStore } from "vuex";
 
 const imgUrl = new URL('@/assets/images/login-head.png', import.meta.url).href;
 const router = useRouter();
-const formType = ref(1);
+const store = useStore();
+const routerList = computed(() => store.state.menu.routerList)
+const formType = ref(0);
 const loginForm = reactive({
   userName: '',
   passWord: '',
@@ -75,7 +78,6 @@ const countdownChange = () => {
   }, 1000);
   flag = true
   getCode({tel: loginForm.userName}).then(({data})=>{
-    console.log(data);
     if(data.code == 10000){
       ElMessage({
         message: '发送成功·',
@@ -86,13 +88,11 @@ const countdownChange = () => {
 }
 const loginFormRef = ref();
 const submitForm = async (formEl) => {
-  console.log(formEl);
   if (!formEl) return
   await formEl.validate((valid, fields) => {
     if (valid) {
       if(formType.value){
         userAuthentication(loginForm).then(({data}) => {
-          console.log(data);
           if(data.code == 10000){
             formType.value = 0;
             ElMessage({
@@ -109,13 +109,18 @@ const submitForm = async (formEl) => {
       }else{
         login(loginForm).then(({data}) => {
           if(data.code == 10000){
-            console.log(data);
             ElMessage({
               message: '登录成功',
               type: 'success',
             });
             localStorage.setItem('pz_token', data.data.token);
             localStorage.setItem('pz_userInfo', JSON.stringify(data.data.userInfo));
+            menuPermissions().then(({ data }) => {
+              store.commit('dynamicMenu', data.data);
+              toRaw(routerList.value).forEach(item => {
+                router.addRoute('Home', item);
+              });
+            })
             router.push('/');
           }else{
             ElMessage({

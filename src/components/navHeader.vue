@@ -7,6 +7,7 @@ const store = useStore();
 const route = useRoute();
 const router = useRouter();
 const selectedMenu = computed(() => store.state.menu.selectMenu);
+const userInfo = JSON.parse(localStorage.getItem('pz_userInfo'));
 const closeTab = (tabItem, tabIndex) => {
   store.commit('closeMenu', tabItem);
   if(route.path != tabItem.path){
@@ -25,8 +26,15 @@ const closeTab = (tabItem, tabIndex) => {
       path: selectedMenu.value[tabIndex].path
     })
   }
+}
 
-
+const handleClick = (command) => {
+  if(command == 'cancel'){
+    localStorage.removeItem('pz_token');
+    localStorage.removeItem('pz_userInfo');
+    localStorage.removeItem('pz_v3pz');
+    router.push('/login');
+  }
 }
 
 </script>
@@ -50,25 +58,19 @@ const closeTab = (tabItem, tabIndex) => {
       </ul>
     </div>
     <div class="header-right">
-      <el-dropdown>
-    <span class="el-dropdown-link flex-box">
-      <el-avatar
-          src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-      />
-      <p class="user-name">admin</p>
-      <el-icon class="el-icon--right">
-        <arrow-down />
-      </el-icon>
-    </span>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item>Action 1</el-dropdown-item>
-            <el-dropdown-item>Action 2</el-dropdown-item>
-            <el-dropdown-item>Action 3</el-dropdown-item>
-            <el-dropdown-item disabled>Action 4</el-dropdown-item>
-            <el-dropdown-item divided>Action 5</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
+      <el-dropdown @command="handleClick">
+        <span class="el-dropdown-link flex-box">
+          <el-avatar
+              :src="userInfo.avatar"
+          />
+          <p class="user-name">{{ userInfo.name }}</p>
+          <el-icon class="el-icon--right">
+            <arrow-down />
+          </el-icon>
+        </span>
+            <template #dropdown>
+              <el-dropdown-item command="cancel">退出</el-dropdown-item>
+            </template>
       </el-dropdown>
     </div>
   </div>

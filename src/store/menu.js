@@ -1,6 +1,9 @@
-const state = {
+const localData = localStorage.getItem('pz_v3pz')
+const state = localData ? JSON.parse(localData) : {
     isCollapse: false,
-    selectMenu: []
+    selectMenu: [],
+    routerList: [],
+    menuActive: '1-1'
 }
 
 const mutations = {
@@ -13,9 +16,26 @@ const mutations = {
         }
     },
     closeMenu(state, payload){
-        console.log(payload);
         const closeIndex = state.selectMenu.findIndex((item) => item.path == payload.path);
         state.selectMenu.splice(closeIndex, 1);
+    },
+    dynamicMenu(state, payload) {
+        const modules = import.meta.glob('../views/**/**/*.vue');
+        function routerSet(router) {
+            router.forEach( route => {
+                if(!route.children) {
+                    const url = `../views${route.meta.path}/${route.name}.vue`;
+                    route.component = modules[url];
+                } else {
+                    routerSet(route.children);
+                }
+            })
+        }
+        routerSet(payload);
+        state.routerList = payload;
+    },
+    updateMenuActive(state, payload){
+        state.menuActive = payload;
     }
 }
 
